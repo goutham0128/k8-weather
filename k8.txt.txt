@@ -1,0 +1,58 @@
+apt-get update
+apt-get install -y docker.io
+
+## 
+
+apt-get update && apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+apt-get install -y kubelet kubeadm kubectl
+
+## 
+Master Commands 
+
+systemctl daemon-reload
+systemctl restart kubelet
+
+## Initializing your master
+
+kubeadm init
+
+#### Output of "kubeadm init"  ####
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+$ kubeadm join 172.31.4.109:6443 --token 3b81ga.mrk0p64i7bwcp6j3 --discovery-token-ca-cert-hash sha256:5437a2c904f984c92b9ff79768203254018f88e2898070502c68937438186bca
+
+###
+
+To make kubectl work for your non-root user, you might want to run these commands (which is also a part of the kubeadm init output):
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+###
+
+kubeadm join
+
+## Create weave network
+
+sysctl net.bridge.bridge-nf-call-iptables=1  [Allow local traffic through weave net, disable iptables]
+
+ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+ 
+## Joining your nodes
+
+kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>
+
+kubeadm join --token 3b81ga.mrk0p64i7bwcp6j3 172.31.4.109:6443 --discovery-token-ca-cert-hash sha256:5437a2c904f984c92b9ff79768203254018f88e2898070502c68937438186bca
